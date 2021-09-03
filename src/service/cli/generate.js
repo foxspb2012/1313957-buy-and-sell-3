@@ -22,8 +22,8 @@ const SumRestrict = {
 };
 
 const PictureRestrict = {
-  min: 1,
-  max: 16,
+  MIN: 1,
+  MAX: 16,
 };
 
 const {MAX_ID_LENGTH} = require(`../../constants`);
@@ -93,5 +93,6 @@ module.exports = {
     }
   }
 };
+
 
 
