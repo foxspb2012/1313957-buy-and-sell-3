@@ -10,32 +10,31 @@ const DEFAULT_PORT = 3000;
 const app = express();
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.info(chalk.green(`Request on route ${req.url}`));
-  res.on(`finish`, () => {
-    console.info(`Response status code ${res.statusCode}`);
-  });
-  next();
-});
-
-app.use(API_PREFIX, routes);
-
-app.use((req, res) => {
-  res.status(HttpCode.NOT_FOUND)
-    .send(`Not found`);
-  console.error(`Route not found: ${req.url}`);
-});
-
-app.use((err, _req, _res, _next) => {
-  console.error(`An error occured on processing request: ${err.message}`);
-});
-
-
 module.exports = {
   name: `--server`,
   async run(args) {
     const [customPort] = args;
     const port = Number.parseInt(customPort, 10) || DEFAULT_PORT;
+
+    app.use((req, res, next) => {
+      console.info(chalk.green(`Request on route ${req.url}`));
+      res.on(`finish`, () => {
+        console.info(`Response status code ${res.statusCode}`);
+      });
+      next();
+    });
+
+    app.use(API_PREFIX, routes);
+
+    app.use((req, res) => {
+      res.status(HttpCode.NOT_FOUND)
+        .send(`Not found`);
+      console.error(`Route not found: ${req.url}`);
+    });
+
+    app.use((err, _req, _res, _next) => {
+      console.error(`An error occured on processing request: ${err.message}`);
+    });
 
     try {
       app.listen(port, (err) => {
