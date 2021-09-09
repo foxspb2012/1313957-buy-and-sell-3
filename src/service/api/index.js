@@ -6,7 +6,9 @@ const offer = require(`../api/offer`);
 const search = require(`../api/search`);
 const getMockData = require(`../lib/get-mock-data`);
 
-const receiveMockData = async () => {
+const router = new Router();
+
+const getRouter = async () => {
   const {
           CategoryService,
           SearchService,
@@ -14,12 +16,13 @@ const receiveMockData = async () => {
           CommentService,
         } = require(`../data-service`);
 
-  const app = new Router();
   const mockData = await getMockData();
 
-  category(app, new CategoryService(mockData));
-  search(app, new SearchService(mockData));
-  offer(app, new OfferService(mockData), new CommentService());
+  category(router, new CategoryService(mockData));
+  search(router, new SearchService(mockData));
+  offer(router, new OfferService(mockData), new CommentService());
+
+  return router;
 };
 
-module.exports = receiveMockData;
+module.exports = getRouter;

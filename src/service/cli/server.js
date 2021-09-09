@@ -24,7 +24,7 @@ module.exports = {
       next();
     });
 
-    app.use(API_PREFIX, routes);
+    app.use(API_PREFIX, await routes);
 
     app.use((req, res) => {
       res.status(HttpCode.NOT_FOUND)
