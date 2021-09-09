@@ -1,7 +1,8 @@
 'use strict';
+const {Router} = require(`express`);
+const {HttpCode} = require(`../../constants`);
+
 module.exports = (app, service) => {
-  const {Router} = require(`express`);
-  const {HttpCode} = require(`../../constants`);
   const route = new Router();
 
   app.use(`/category`, route);
