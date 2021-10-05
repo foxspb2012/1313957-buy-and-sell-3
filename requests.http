@@ -65,13 +65,13 @@ GET http://localhost:3000/api/offers/R_n-aW/comments HTTP/1.1
 
 # Удаляет комментарий
 
-DELETE http://localhost:3000/api/offers/R_n-aW/comments/MY5bSv HTTP/1.1
+DELETE http://localhost:3000/api/offers/V_Awa2/comments/Rq8Dro HTTP/1.1
 
 ###
 
 # Добавляет новый комментарий к публикации
 
-POST http://localhost:3000/api/offers/R_n-aW/comments HTTP/1.1
+POST http://localhost:3000/api/offers/V_Awa2/comments HTTP/1.1
 Content-Type: application/json
 
 {

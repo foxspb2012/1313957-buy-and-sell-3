@@ -19,9 +19,9 @@ app.use(`/offers`, offersRouter);
 app.use(express.static(path.resolve(__dirname, PUBLIC_DIR)));
 
 app.use((req, res) => res.status(400).render(`errors/404`));
-app.use((err, req, res, next) => res.status(500).render(`errors/500`));
+app.use((err, _req, res, _next) => res.status(500).render(`errors/500`));
 
 app.set(`views`, path.resolve(__dirname, `templates`));
 app.set(`view engine`, `pug`);
 
-app.listen(DEFAULT_PORT);
+app.listen(process.env.PORT || DEFAULT_PORT);

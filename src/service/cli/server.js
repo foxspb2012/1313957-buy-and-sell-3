@@ -1,13 +1,15 @@
 'use strict';
 
-const chalk = require(`chalk`);
 const express = require(`express`);
 const {HttpCode, API_PREFIX} = require(`../../constants`);
 const routes = require(`../api`);
+const {getLogger} = require(`../lib/logger`);
 
 const DEFAULT_PORT = 3000;
 
 const app = express();
+const logger = getLogger({name: `api`});
+
 app.use(express.json());
 
 module.exports = {
@@ -17,9 +19,9 @@ module.exports = {
     const port = Number.parseInt(customPort, 10) || DEFAULT_PORT;
 
     app.use((req, res, next) => {
-      console.info(chalk.green(`Request on route ${req.url}`));
+      logger.debug(`Request on route ${req.url}`);
       res.on(`finish`, () => {
-        console.info(`Response status code ${res.statusCode}`);
+        logger.info(`Response status code ${res.statusCode}`);
       });
       next();
     });
@@ -29,23 +31,23 @@ module.exports = {
     app.use((req, res) => {
       res.status(HttpCode.NOT_FOUND)
         .send(`Not found`);
-      console.error(`Route not found: ${req.url}`);
+      logger.error(`Route not found: ${req.url}`);
     });
 
     app.use((err, _req, _res, _next) => {
-      console.error(`An error occured on processing request: ${err.message}`);
+      logger.error(`An error occured on processing request: ${err.message}`);
     });
 
     try {
       app.listen(port, (err) => {
         if (err) {
-          return console.error(`Ошибка при создании сервера`, err);
+          return logger.error(`An error occured on server creation: ${err.message}`);
         }
 
-        return console.info(chalk.green(`Ожидаю соединений на ${port}`));
+        return logger.info(`Listening to connections on ${port}`);
       });
     } catch (err) {
-      return console.error(`An error occured: ${err.message}`);
+      logger.error(`An error occured: ${err.message}`);
       process.exit(1);
     }
   }
