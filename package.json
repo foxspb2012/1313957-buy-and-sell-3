@@ -7,10 +7,10 @@
     "test": "npm run eslint && npm run jest",
     "jest": "jest",
     "eslint": "eslint --ext .js src/",
-    "start": "cross-env NODE_ENV=production node ./src/service/service.js",
-    "start::debug": "cross-env NODE_ENV=development node ./src/service/service.js",
+    "start": "cross-env NODE_ENV=production node ./src/service/service.js --server",
+    "start::debug": "cross-env NODE_ENV=development node ./src/service/service.js --server",
     "server": "nodemon ./src/service/service.js --server 3000",
-    "start-front-server": "node src/express/express.js"
+    "start-front-server": "node ./src/express/express.js"
   },
   "repository": {
     "type": "git",
@@ -31,9 +31,11 @@
     "supertest": "6.1.6"
   },
   "dependencies": {
+    "axios": "0.22.0",
     "chalk": "3.0.0",
     "cross-env": "7.0.3",
     "express": "4.17.1",
+    "multer": "1.4.3",
     "nanoid": "3.1.25",
     "pino": "6.13.3",
     "pug": "2.0.4"
