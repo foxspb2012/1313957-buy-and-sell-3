@@ -7,8 +7,8 @@
     "test": "npm run eslint && npm run jest",
     "jest": "jest",
     "eslint": "eslint --ext .js src/",
-    "start": "cross-env NODE_ENV=production node ./src/service/service.js --server",
-    "start::debug": "cross-env NODE_ENV=development node ./src/service/service.js --server",
+    "start": "cross-env NODE_ENV=production node -r dotenv/config ./src/service/service.js --server",
+    "start::debug": "cross-env NODE_ENV=development node -r dotenv/config ./src/service/service.js --server",
     "server": "nodemon ./src/service/service.js --server 3000",
     "start-front-server": "node ./src/express/express.js"
   },
@@ -34,10 +34,13 @@
     "axios": "0.22.0",
     "chalk": "3.0.0",
     "cross-env": "7.0.3",
+    "dotenv": "10.0.0",
     "express": "4.17.1",
     "multer": "1.4.3",
     "nanoid": "3.1.25",
+    "pg": "8.7.1",
     "pino": "6.13.3",
-    "pug": "2.0.4"
+    "pug": "2.0.4",
+    "sequelize": "6.12.0-alpha.1"
   }
 }
