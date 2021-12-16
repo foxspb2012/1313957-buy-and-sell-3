@@ -9,14 +9,14 @@ module.exports = (app, offerService) => {
 
   app.use(`/offers`, route);
 
-  route.get(`/`, (req, res) => {
-    const offers = offerService.findAll();
+  route.get(`/`, async (req, res) => {
+    const offers = await offerService.findAll(false);
     res.status(HttpCode.OK).json(offers);
   });
 
-  route.get(`/:offerId`, (req, res) => {
+  route.get(`/:offerId`, async (req, res) => {
     const {offerId} = req.params;
-    const offer = offerService.findOne(offerId);
+    const offer = await offerService.findOne(offerId);
 
     if (!offer) {
       return res.status(HttpCode.NOT_FOUND)
@@ -27,31 +27,29 @@ module.exports = (app, offerService) => {
       .json(offer);
   });
 
-  route.post(`/`, offerValidator, (req, res) => {
-    const offer = offerService.create(req.body);
+  route.post(`/`, offerValidator, async (req, res) => {
+    const offer = await offerService.create(req.body);
 
     return res.status(HttpCode.CREATED)
       .json(offer);
   });
 
-  route.put(`/:offerId`, offerValidator, (req, res) => {
+  route.put(`/:offerId`, offerValidator, async (req, res) => {
     const {offerId} = req.params;
-    const existOffer = offerService.findOne(offerId);
+    const updated = await offerService.update(offerId, req.body);
 
-    if (!existOffer) {
+    if (!updated) {
       return res.status(HttpCode.NOT_FOUND)
         .send(`Not found with ${offerId}`);
     }
 
-    const updatedOffer = offerService.update(offerId, req.body);
-
     return res.status(HttpCode.OK)
-      .json(updatedOffer);
+      .send(`Updated`);
   });
 
-  route.delete(`/:offerId`, (req, res) => {
+  route.delete(`/:offerId`, async (req, res) => {
     const {offerId} = req.params;
-    const offer = offerService.drop(offerId);
+    const offer = await offerService.drop(offerId);
 
     if (!offer) {
       return res.status(HttpCode.NOT_FOUND)

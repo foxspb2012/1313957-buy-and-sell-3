@@ -29,5 +29,4 @@ app.use((err, _req, res, _next) => {
 app.set(`views`, path.resolve(__dirname, `templates`));
 app.set(`view engine`, `pug`);
 
-app.
-listen(process.env.PORT || DEFAULT_PORT);
+app.listen(process.env.PORT || DEFAULT_PORT);
