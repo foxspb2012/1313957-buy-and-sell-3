@@ -52,6 +52,19 @@ class OfferService {
 
     return !!affectedRows;
   }
+
+  async findPage({limit, offset}) {
+    const {count, rows} = await this._Offer.findAndCountAll({
+      limit,
+      offset,
+      include: [Aliase.CATEGORIES],
+      order: [
+        [`createdAt`, `DESC`]
+      ],
+      distinct: true
+    });
+    return {count, offers: rows};
+  }
 }
 
 module.exports = OfferService;

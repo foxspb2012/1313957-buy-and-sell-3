@@ -20,8 +20,8 @@ class API {
     return response.data;
   }
 
-  getOffers() {
-    return this._load(`/offers`);
+  getOffers({offset, limit, comments}) {
+    return this._load(`/offers`, {params: {offset, limit, comments}});
   }
 
   getOffer(id, comments) {

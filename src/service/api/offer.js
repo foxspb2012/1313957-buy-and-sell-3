@@ -10,8 +10,14 @@ module.exports = (app, offerService) => {
   app.use(`/offers`, route);
 
   route.get(`/`, async (req, res) => {
-    const offers = await offerService.findAll(false);
-    res.status(HttpCode.OK).json(offers);
+    const {offset, limit, comments} = req.query;
+    let result;
+    if (limit || offset) {
+      result = await offerService.findPage({limit, offset});
+    } else {
+      result = await offerService.findAll(comments);
+    }
+    res.status(HttpCode.OK).json(result);
   });
 
   route.get(`/:offerId`, async (req, res) => {
