@@ -4,13 +4,14 @@ const {Router} = require(`express`);
 const {HttpCode} = require(`../../constants`);
 const offerExist = require(`../middlewares/offer-exists`);
 const commentValidator = require(`../middlewares/comment-validator`);
+const routeParamsValidator = require(`../middlewares/route-params-validator`);
 
 module.exports = (app, offerService, commentService) => {
   const route = new Router();
 
   app.use(`/offers`, route);
 
-  route.get(`/:offerId/comments`, offerExist(offerService), async (req, res) => {
+  route.get(`/:offerId/comments`, [routeParamsValidator, offerExist(offerService)], async (req, res) => {
     const {offerId} = req.params;
     const comments = await commentService.findAll(offerId);
 
@@ -19,7 +20,7 @@ module.exports = (app, offerService, commentService) => {
 
   });
 
-  route.delete(`/:offerId/comments/:commentId`, offerExist(offerService), async (req, res) => {
+  route.delete(`/:offerId/comments/:commentId`, [routeParamsValidator, offerExist(offerService)], async (req, res) => {
     const {commentId, offerId} = req.params;
     const deletedComment = await commentService.drop(offerId, commentId);
 
@@ -32,7 +33,7 @@ module.exports = (app, offerService, commentService) => {
       .json(deletedComment);
   });
 
-  route.post(`/:offerId/comments`, [offerExist(offerService), commentValidator], (req, res) => {
+  route.post(`/:offerId/comments`, [routeParamsValidator, offerExist(offerService), commentValidator], (req, res) => {
     const {offerId} = req.params;
     const comment = commentService.create(offerId, req.body);
 

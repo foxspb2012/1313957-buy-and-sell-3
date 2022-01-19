@@ -52,6 +52,7 @@ block content
                       textarea#comment-field.js-field(name="comment" cols="30" rows="10") Нормальное вообще кресло! А как насч
                       label(for="comment-field") Текст комментария
                       span Обязательное поле
+                  +insertErrorMessages(validationMessages)
                   button.comment-form__button.btn.btn--white.js-button(type="submit" disabled="") Отправить
               .ticket__comments-list
                 ul.comments-list
