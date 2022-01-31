@@ -4,14 +4,15 @@ const Joi = require(`Joi`);
 const {HttpCode} = require(`../../constants`);
 
 const ErrorOfferMessage = {
-  CATEGORIES: `Не выбрана ни одна категория объявления`,
-  TITLE_MIN: `Заголовок содержит меньше 10 символов`,
-  TITLE_MAX: `Заголовок не может содержать более 100 символов`,
-  DESCRIPTION_MIN: `Описание содержит меньше 50 символов`,
-  DESCRIPTION_MAX: `Заголовок не может содержать более 1000 символов`,
-  PICTURE: `Изображение не выбрано или тип изображения не поддерживается`,
-  TYPE: `Не выбран ни один тип объявления`,
-  SUM: `Сумма не может быть меньше 100`
+  CATEGORIES: `Не выбрана ни одна категория объявления.`,
+  TITLE_MIN: `Заголовок содержит меньше 10 символов.`,
+  TITLE_MAX: `Заголовок не может содержать более 100 символов.`,
+  DESCRIPTION_MIN: `Описание содержит меньше 50 символов.`,
+  DESCRIPTION_MAX: `Заголовок не может содержать более 1000 символов.`,
+  PICTURE: `Изображение не выбрано или тип изображения не поддерживается.`,
+  TYPE: `Не выбран ни один тип объявления.`,
+  SUM: `Сумма не может быть меньше 100.`,
+  USER_ID: `Некорректный идентификатор пользователя.`
 };
 
 const schema = Joi.object({
@@ -36,6 +37,9 @@ const schema = Joi.object({
   }),
   sum: Joi.number().integer().min(100).required().messages({
     'number.min': ErrorOfferMessage.SUM
+  }),
+  userId: Joi.number().integer().positive().required().messages({
+    'number.base': ErrorOfferMessage.USER_ID
   })
 });
 

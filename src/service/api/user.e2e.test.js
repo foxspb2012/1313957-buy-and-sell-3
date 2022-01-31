@@ -6,8 +6,8 @@ const Sequelize = require(`sequelize`);
 
 const initDB = require(`../lib/init-db`);
 const passwordUtils = require(`../lib/password`);
-const category = require(`./category`);
-const DataService = require(`../data-service/category`);
+const user = require(`./user`);
+const DataService = require(`../data-service/user`);
 
 const {HttpCode} = require(`../../constants`);
 
@@ -66,7 +66,7 @@ const mockOffers = [
     ],
     "comments": [
       {
-        "user": `petrov@example.com`,
+        "user": `ivanov@example.com`,
         "text": `А где блок питания? С чем связана продажа? Почему так дешёво?`
       },
       {
@@ -124,7 +124,7 @@ const mockOffers = [
     "sum": 54264
   },
   {
-    "user": `petrov@example.com`,
+    "user": `ivanov@example.com`,
     "categories": [
       `Животные`
     ],
@@ -134,7 +134,7 @@ const mockOffers = [
         "text": `Оплата наличными или перевод на карту?`
       },
       {
-        "user": `ivanov@example.com`,
+        "user": `petrov@example.com`,
         "text": `Почему в таком ужасном состоянии? Совсем немного...`
       },
       {
@@ -154,33 +154,101 @@ const mockOffers = [
   }
 ];
 
-const mockDB = new Sequelize(`sqlite::memory:`, {logging: false});
-
-const app = express();
-app.use(express.json());
-
-beforeAll(async () => {
+const createAPI = async () => {
+  const mockDB = new Sequelize(`sqlite::memory:`, {logging: false});
   await initDB(mockDB, {categories: mockCategories, offers: mockOffers, users: mockUsers});
-  category(app, new DataService(mockDB));
-});
+  const app = express();
+  app.use(express.json());
+  user(app, new DataService(mockDB));
+  return app;
+};
 
-describe(`API returns category list`, () => {
+describe(`API creates user if data is valid`, () => {
+  const validUserData = {
+    name: `Сидор Сидоров`,
+    email: `sidorov@example.com`,
+    password: `sidorov`,
+    passwordRepeated: `sidorov`,
+    avatar: `sidorov.jpg`
+  };
 
   let response;
 
   beforeAll(async () => {
+    let app = await createAPI();
     response = await request(app)
-      .get(`/category`);
+      .post(`/user`)
+      .send(validUserData);
   });
 
-  test(`Status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
+  test(`Status code 201`, () => expect(response.statusCode).toBe(HttpCode.CREATED));
+});
 
-  test(`Returns list of 3 categories`, () => expect(response.body.length).toBe(3));
+describe(`API refuses to create user if data is invalid`, () => {
+  const validUserData = {
+    name: `Сидор Сидоров`,
+    email: `sidorov@example.com`,
+    password: `sidorov`,
+    passwordRepeated: `sidorov`,
+    avatar: `sidorov.jpg`
+  };
 
-  test(`Category names are "Журналы", "Игры", "Животные"`,
-      () => expect(response.body.map((it) => it.name)).toEqual(
-          expect.arrayContaining([`Журналы`, `Игры`, `Животные`])
-      )
-  );
+  let app;
 
+  beforeAll(async () => {
+    app = await createAPI();
+  });
+
+  test(`Without any required property response code is 400`, async () => {
+    for (const key of Object.keys(validUserData)) {
+      const badUserData = {...validUserData};
+      delete badUserData[key];
+      await request(app)
+        .post(`/user`)
+        .send(badUserData)
+        .expect(HttpCode.BAD_REQUEST);
+    }
+  });
+
+  test(`When field type is wrong response code is 400`, async () => {
+    const badUsers = [
+      {...validUserData, firstName: true},
+      {...validUserData, email: 1}
+    ];
+    for (const badUserData of badUsers) {
+      await request(app)
+        .post(`/user`)
+        .send(badUserData)
+        .expect(HttpCode.BAD_REQUEST);
+    }
+  });
+
+  test(`When field value is wrong response code is 400`, async () => {
+    const badUsers = [
+      {...validUserData, password: `short`, passwordRepeated: `short`},
+      {...validUserData, email: `invalid`}
+    ];
+    for (const badUserData of badUsers) {
+      await request(app)
+        .post(`/user`)
+        .send(badUserData)
+        .expect(HttpCode.BAD_REQUEST);
+    }
+  });
+
+  test(`When password and passwordRepeated are not equal, code is 400`, async () => {
+    const badUserData = {...validUserData, passwordRepeated: `not sidorov`};
+    await request(app)
+      .post(`/user`)
+      .send(badUserData)
+      .expect(HttpCode.BAD_REQUEST);
+  });
+
+  test(`When email is already in use status code is 400`, async () => {
+    const badUserData = {...validUserData, email: `ivanov@example.com`};
+    await request(app)
+      .post(`/user`)
+      .send(badUserData)
+      .expect(HttpCode.BAD_REQUEST);
+  });
 });
