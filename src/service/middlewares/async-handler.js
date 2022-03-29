@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (fn) => (req, res) =>
+module.exports = (fn) => (req, res, next) =>
   Promise
     .resolve(fn(req, res))
-    .catch();
+    .catch(next);
