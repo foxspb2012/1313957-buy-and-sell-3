@@ -2,7 +2,7 @@
 const {Router} = require(`express`);
 const {HttpCode} = require(`../../constants`);
 
-module.exports = (app, service) => {
+module.exports = (app, searchService) => {
   const route = new Router();
 
   app.use(`/search`, route);
@@ -14,7 +14,7 @@ module.exports = (app, service) => {
       return;
     }
 
-    const searchResults = await service.findAll(query);
+    const searchResults = await searchService.findAll(query);
     const searchStatus = searchResults.length > 0 ? HttpCode.OK : HttpCode.NOT_FOUND;
 
     res.status(searchStatus)

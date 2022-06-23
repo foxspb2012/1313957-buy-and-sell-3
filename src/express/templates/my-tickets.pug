@@ -9,20 +9,21 @@ block content
         a.tickets-list__btn.btn.btn--big(href="/offers/add")
           span Новая публикация
       ul
-        each offer in offers
+        each offer in offers.current
           li.tickets-list__item.js-card
-            .ticket-card.ticket-card--color01
+            +ticketCard(offer.id)
               .ticket-card__img
                 +insertOfferImage(offer)
               .ticket-card__info
                 +ticketLabel(offer.type)
                 .ticket-card__categories
                   each category in offer.categories
-                    a(href="#") #{category.name}
+                    a(href=`/offers/category/${category.id}`) #{category.name}
                 .ticket-card__header
                   h3.ticket-card__title
-                    a(href=`/offers/${offer.id}`) #{offer.title}
+                    a(href=`/offers/edit/${offer.id}`) #{offer.title}
                   p.ticket-card__price
                     span.js-sum #{offer.sum}
                     |  ₽
-              button.ticket-card__del.js-delete(type="button") Удалить
+              form(method='GET' action=`/offers/delete/${offer.id}`)
+                button.ticket-card__del(type='submit') Удалить

@@ -201,7 +201,6 @@ test(`API refuses to create a comment when data is invalid, and returns status c
 describe(`API correctly deletes a comment`, () => {
 
   let app; let response;
-
   beforeAll(async () => {
     app = await createAPI();
     response = await request(app)

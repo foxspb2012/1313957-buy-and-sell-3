@@ -17,9 +17,35 @@ head
       margin: 20px 0;
       padding: 10px;
     }
+    .client-error {
+      position: fixed;
+      width: 100%;
+      padding: 10px;
+      color: white;
+      text-align: center;
+      z-index: 1;
+    }
+    .client-error__success {
+      background-color: darkseagreen;
+    }
+    .client-error__fail {
+      background-color: tomato;
+    }
+    .comment-card__date {
+      margin-left: auto;
+    }
 body
   -
+    const MAX_DESCRIPTION_LENGTH = 55;
     const getRandomInt = (max) => Math.ceil(Math.random() * max);
+
+  mixin ticketCard(id)
+    .ticket-card(class = `ticket-card--color0${id}`)
+      block
+
+  mixin tiketCardDescription(description)
+    .ticket-card__desc
+      p #{description.slice(0, MAX_DESCRIPTION_LENGTH)}
 
   mixin ticketLabel(type)
     span(class!=attributes.class || `ticket-card__label`) #{type === `OFFER` ? `Куплю` : `Продам`}
@@ -28,10 +54,7 @@ body
     img(src=`/img/${offer.picture ? offer.picture : 'blank.png'}` alt=offer.title)
 
   mixin categoryImage(category)
-    -
-      const idPadded = `0${getRandomInt(6)}`
-
-    img(src=`/img/cat${idPadded}.jpg` srcset=`/img/cat${idPadded}@2x.jpg 2x` alt=category.name)
+    img(src=`/img/cat0${category.id}.jpg` srcset=`/img/cat${category.id}@2x.jpg 2x` alt=category.name)
 
 
   mixin pagination(page, totalPages, width, prefix)
@@ -52,16 +75,17 @@ body
       let i = start - 1
 
     .tickets-list__pagination
-      ul.pagination
-        if start > 1
-          li
-            a(href=`${prefix}page=${page - 1}`) Назад
-        while i++ < end
-          li
-            a(class={active: i === page} href=`${prefix}page=${i}`)= i
-        if end < totalPages
-          li
-            a(href=`${prefix}page=${page + 1}`) Вперёд
+      if totalPages > 1
+        ul.pagination
+          if start > 1
+            li
+              a(href=`${prefix}page=${page - 1}`) Назад
+          while i++ < end
+            li
+              a(class={active: i === page} href=`${prefix}page=${i}`)= i
+          if end < totalPages
+            li
+              a(href=`${prefix}page=${page + 1}`) Вперёд
 
   mixin insertErrorMessages(messages)
     if messages
@@ -71,5 +95,6 @@ body
   include partials/header.pug
   block content
   include partials/footer.pug
+  include partials/offer-template.pug
   script(src='/js/vendor.js')
   script(src='/js/main.js')

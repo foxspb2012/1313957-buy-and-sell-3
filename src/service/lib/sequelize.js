@@ -20,6 +20,6 @@ module.exports = new Sequelize(
         acquire: 10000,
         idle: 1000
       },
-    logging: false
+      logging: false
     }
 );

@@ -31,22 +31,22 @@ module.exports = (app, service) => {
   });
 
   route.post(`/auth`, asyncHandler(async (req, res) => {
-      const {email, password} = req.body;
-      const user = await service.findByEmail(email);
+    const {email, password} = req.body;
+    const user = await service.findByEmail(email);
 
-      if (!user) {
-        res.status(HttpCode.UNAUTHORIZED).send(ErrorAuthMessage.EMAIL);
-        return;
-      }
+    if (!user) {
+      res.status(HttpCode.UNAUTHORIZED).send(ErrorAuthMessage.EMAIL);
+      return;
+    }
 
-      const passwordIsCorrect = await passwordUtils.compare(password, user.passwordHash);
+    const passwordIsCorrect = await passwordUtils.compare(password, user.passwordHash);
 
-      if (passwordIsCorrect) {
-        delete user.passwordHash;
-        res.status(HttpCode.OK).json(user);
-      } else {
-        res.status(HttpCode.UNAUTHORIZED).send(ErrorAuthMessage.PASSWORD);
-      }
-    })
+    if (passwordIsCorrect) {
+      delete user.passwordHash;
+      res.status(HttpCode.OK).json(user);
+    } else {
+      res.status(HttpCode.UNAUTHORIZED).send(ErrorAuthMessage.PASSWORD);
+    }
+  })
   );
 };

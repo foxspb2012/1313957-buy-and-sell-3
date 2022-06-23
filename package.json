@@ -8,6 +8,7 @@
     "jest": "jest",
     "eslint": "eslint --ext .js src/",
     "start": "npm run start-servers",
+    "filldb": "node -r dotenv/config ./src/service/service.js --filldb 20",
     "start-servers": "concurrently \"npm run start-back-server\" \"npm run start-front-server\"",
     "start-back-server": "cross-env LOG_LEVEL=error node -r dotenv/config ./src/service/service.js --server",
     "start-back-server::debug": "cross-env LOG_LEVEL=info NODE_ENV=development node -r dotenv/config ./src/service/service.js --server",

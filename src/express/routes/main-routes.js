@@ -10,40 +10,27 @@ const OFFERS_PER_PAGE = 8;
 const mainRouter = new Router();
 
 mainRouter.get(`/`, async (req, res) => {
-
   const {user} = req.session;
 
-  // получаем номер страницы
-  let {page = 1} = req.query;
-  page = +page;
-
-  // количество запрашиваемых объявлений равно количеству объявлений на странице
   const limit = OFFERS_PER_PAGE;
 
-  // количество объявлений, которое нам нужно пропустить - это количество объявлений на предыдущих страницах
-  const offset = (page - 1) * OFFERS_PER_PAGE;
-  const [
-    {count, offers},
-    categories
-  ] = await Promise.all([
-    api.getOffers({limit, offset}),
-    api.getCategories(true)
+  const [offers, categories] = await Promise.all([
+    api.getOffers({limit}),
+    api.getCategories({withCount: true})
   ]);
 
-  // количество страниц — это общее количество объявлений, поделённое на количество объявлений на странице (с округлением вверх)
-  const totalPages = Math.ceil(count / OFFERS_PER_PAGE);
-
-  // передадим все эти данные в шаблон
-  res.render(`main`, {offers, categories, page, totalPages, user});
+  res.render(`main`, {offers, categories, user});
 });
 
 mainRouter.get(`/register`, (req, res) => {
   const {user} = req.session;
+
   res.render(`sign-up`, {user});
 });
 
 mainRouter.post(`/register`, upload.single(`avatar`), async (req, res) => {
   const {body, file} = req;
+
   const userData = {
     avatar: file ? file.filename : ``,
     name: body[`user-name`],
@@ -51,24 +38,32 @@ mainRouter.post(`/register`, upload.single(`avatar`), async (req, res) => {
     password: body[`user-password`],
     passwordRepeated: body[`user-password-again`]
   };
+
   try {
-    await api.createUser(userData);
+    await api.createUser({data: userData});
+
     res.redirect(`/login`);
   } catch (errors) {
     const validationMessages = prepareErrors(errors);
     const {user} = req.session;
-    res.render(`sign-up`, {user, validationMessages});
+
+    res.render(`sign-up`, {user, userData, validationMessages});
   }
 });
 
 mainRouter.get(`/login`, (req, res) => {
   const {user} = req.session;
+
   res.render(`login`, {user});
 });
 
 mainRouter.post(`/login`, async (req, res) => {
+  const email = req.body[`user-email`];
+  const password = req.body[`user-password`];
+
   try {
-    const user = await api.auth(req.body[`user-email`], req.body[`user-password`]);
+    const user = await api.auth({email, password});
+
     req.session.user = user;
     req.session.save(() => {
       res.redirect(`/`);
@@ -76,27 +71,50 @@ mainRouter.post(`/login`, async (req, res) => {
   } catch (errors) {
     const validationMessages = prepareErrors(errors);
     const {user} = req.session;
+
     res.render(`login`, {user, validationMessages});
   }
 });
 
 mainRouter.get(`/logout`, (req, res) => {
-  req.session.destroy(() => res.redirect(`/`));
+  req.session.destroy(
+      () => res.redirect(`/`)
+  );
 });
 
 mainRouter.get(`/search`, async (req, res) => {
   const {user} = req.session;
+  const {query} = req.query;
+
+  const limit = OFFERS_PER_PAGE;
+
+  const offers = await api.getOffers({limit});
+
+  if (!query) {
+    return res.render(`search-result`, {
+      query: '',
+      result: [],
+      offers,
+      user
+    });
+  }
+
   try {
-    const {search} = req.query;
-    const results = await api.search(search);
+    const result = await api.search({query});
 
     res.render(`search-result`, {
-      results,
+      query,
+      result,
+      offers,
       user
     });
   } catch (error) {
+    const offers = await api.getOffers({limit});
+
     res.render(`search-result`, {
-      results: [],
+      query,
+      result: [],
+      offers,
       user
     });
   }

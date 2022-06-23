@@ -181,9 +181,9 @@ describe(`API returns a list of all offers`, () => {
 
   test(`Status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
 
-  test(`Returns a list of 5 offers`, () => expect(response.body.length).toBe(5));
+  test(`Returns a list of 5 offers`, () => expect(response.body.recent.length).toBe(5));
 
-  test(`First offer's title equals "Продам книги Стивена Кинга"`, () => expect(response.body[0].title).toBe(`Продам книги Стивена Кинга`));
+  test(`First offer's title equals "Продам книги Стивена Кинга"`, () => expect(response.body.recent[0].title).toBe(`Продам книги Стивена Кинга`));
 
 });
 
@@ -191,10 +191,15 @@ describe(`API returns an offer with given id`, () => {
 
   let response;
 
+  const data = {
+    userId: 1
+  };
+
   beforeAll(async () => {
     const app = await createAPI();
     response = await request(app)
-      .get(`/offers/1`);
+      .get(`/offers/1`)
+      .send(data);
   });
 
   test(`Status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
@@ -227,7 +232,7 @@ describe(`API creates an offer if data is valid`, () => {
 
   test(`Offers count is changed`, () => request(app)
     .get(`/offers`)
-    .expect((res) => expect(res.body.length).toBe(6))
+    .expect((res) => expect(res.body.recent.length).toBe(6))
   );
 
 });
@@ -299,7 +304,7 @@ describe(`API changes existent offer`, () => {
     picture: `cat.jpg`,
     type: `OFFER`,
     sum: 100500,
-    userId: 1
+    userId: 2
   };
 
   let app; let response;
@@ -335,7 +340,7 @@ test(`API returns status code 404 when trying to change non-existent offer`, asy
   };
 
   return request(app)
-    .put(`/offers/20`)
+    .get(`/offers/20`)
     .send(validOffer)
     .expect(HttpCode.NOT_FOUND);
 });
@@ -363,17 +368,22 @@ describe(`API correctly deletes an offer`, () => {
 
   let app; let response;
 
+  const data = {
+    userId: 1
+  };
+
   beforeAll(async () => {
     app = await createAPI();
     response = await request(app)
-      .delete(`/offers/1`);
+      .delete(`/offers/1`)
+      .send(data);
   });
 
   test(`Status code 200`, () => expect(response.statusCode).toBe(HttpCode.OK));
 
   test(`Offer count is 4 now`, () => request(app)
     .get(`/offers`)
-    .expect((res) => expect(res.body.length).toBe(4))
+    .expect((res) => expect(res.body.recent.length).toBe(4))
   );
 
 });
