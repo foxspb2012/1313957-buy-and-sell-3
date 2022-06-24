@@ -1,21 +1,22 @@
 'use strict';
 const {Router} = require(`express`);
 const {HttpCode} = require(`../../constants`);
+const {asyncHandler} = require(`../../utils`);
 
 module.exports = (app, categoryService) => {
   const route = new Router();
 
   app.use(`/category`, route);
 
-  route.get(`/`, async (req, res) => {
+  route.get(`/`, asyncHandler(async (req, res) => {
     const {withCount} = req.query;
 
     const categories = await categoryService.findAll(withCount);
     res.status(HttpCode.OK)
       .json(categories);
-  });
+  }));
 
-  route.get(`/:categoryId`, async (req, res) => {
+  route.get(`/:categoryId`, asyncHandler(async (req, res) => {
     const {categoryId} = req.params;
     const {limit, offset} = req.query;
 
@@ -29,5 +30,5 @@ module.exports = (app, categoryService) => {
         count,
         offersByCategory
       });
-  });
+  }));
 };

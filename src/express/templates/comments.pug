@@ -34,5 +34,7 @@ block content
                       .comment-card__content
                         p
                           | #{comment.text}
-                      form(method='GET' action=`/offers/${offer.id}/comments/delete/${comment.id}`)
-                        button.comment-card__delete(type='submit') Удалить
+                      a.comment-card__delete(
+                        href=`/offers/${offer.id}/comments/${comment.id}`
+                      )
+                        | Удалить

@@ -3,33 +3,32 @@
 const {Router} = require(`express`);
 const csrf = require(`csurf`);
 const api = require(`../api`).getAPI();
-const {ensureArray, prepareErrors} = require(`../../utils`);
+const {ensureArray, prepareErrors, asyncHandler} = require(`../../utils`);
 const upload = require(`../middlewares/upload`);
 const auth = require(`../middlewares/auth`);
+const {HttpCode, OFFERS_PER_PAGE} = require(`../../constants`);
 
 const offersRouter = new Router();
 
 const csrfProtection = csrf();
 
-const OFFERS_PER_PAGE = 8;
-
 const getAddOfferData = () => {
   return api.getCategories({withCount: false});
 };
 
-const getEditOfferData = async ({id, userId}) => {
+const getEditOfferData = asyncHandler(async ({id, userId}) => {
   const [offer, categories] = await Promise.all([
     api.getOffer({id, userId, withComments: false}),
     api.getCategories({withCount: false})
   ]);
   return [offer, categories];
-};
+});
 
 const getViewOfferData = ({id}) => {
   return api.getOffer({id, withComments: true});
 };
 
-offersRouter.get(`/category/:categoryId`, async (req, res) => {
+offersRouter.get(`/category/:categoryId`, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {categoryId} = req.params;
 
@@ -60,9 +59,9 @@ offersRouter.get(`/category/:categoryId`, async (req, res) => {
     totalPages,
     user
   });
-});
+}));
 
-offersRouter.get(`/add`, auth, csrfProtection, async (req, res) => {
+offersRouter.get(`/add`, auth, csrfProtection, asyncHandler(async (req, res) => {
   const {user} = req.session;
 
   try {
@@ -71,9 +70,9 @@ offersRouter.get(`/add`, auth, csrfProtection, async (req, res) => {
   } catch (error) {
     res.render(`errors/400`);
   }
-});
+}));
 
-offersRouter.post(`/add`, auth, upload.single(`avatar`), csrfProtection, async (req, res) => {
+offersRouter.post(`/add`, auth, upload.single(`avatar`), csrfProtection, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {body, file} = req;
 
@@ -96,9 +95,9 @@ offersRouter.post(`/add`, auth, upload.single(`avatar`), csrfProtection, async (
 
     res.render(`offers/new-ticket`, {categories, user, validationMessages, csrfToken: req.csrfToken()});
   }
-});
+}));
 
-offersRouter.get(`/edit/:id`, auth, csrfProtection, async (req, res) => {
+offersRouter.get(`/edit/:id`, auth, csrfProtection, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {id} = req.params;
 
@@ -109,9 +108,9 @@ offersRouter.get(`/edit/:id`, auth, csrfProtection, async (req, res) => {
   } catch (error) {
     res.render(`errors/400`);
   }
-});
+}));
 
-offersRouter.post(`/edit/:id`, auth, upload.single(`avatar`), csrfProtection, async (req, res) => {
+offersRouter.post(`/edit/:id`, auth, upload.single(`avatar`), csrfProtection, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {body, file} = req;
   const {id} = req.params;
@@ -136,29 +135,30 @@ offersRouter.post(`/edit/:id`, auth, upload.single(`avatar`), csrfProtection, as
 
     res.render(`offers/ticket-edit`, {id, offer, categories, validationMessages, user, csrfToken: req.csrfToken()});
   }
-});
+}));
 
-offersRouter.get(`/:id`, csrfProtection, async (req, res)=> {
+offersRouter.get(`/:id`, csrfProtection, asyncHandler(async (req, res)=> {
   const {user} = req.session;
   const {id} = req.params;
 
   const offer = await getViewOfferData({id});
   res.render(`offers/ticket`, {offer, id, user, csrfToken: req.csrfToken()});
-});
+}));
 
-offersRouter.get(`/delete/:id`, auth, async (req, res) => {
+offersRouter.delete(`/:id`, auth, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {id} = req.params;
 
   try {
-    await api.removeOffer({id, userId: user.id});
-    return res.redirect(`/my`);
-  } catch (errors) {
-    return res.redirect(`/my`);
-  }
-});
+    const offer = await api.removeOffer({id, userId: user.id});
 
-offersRouter.post(`/:id/comments`, auth, csrfProtection, async (req, res) => {
+    res.status(HttpCode.OK).send(offer);
+  } catch (errors) {
+    res.status(errors.response.status).send(errors.response.statusText);
+  }
+}));
+
+offersRouter.post(`/:id/comments`, auth, csrfProtection, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {id} = req.params;
   const {comment} = req.body;
@@ -168,8 +168,10 @@ offersRouter.post(`/:id/comments`, auth, csrfProtection, async (req, res) => {
     text: comment
   };
 
+  const limit = OFFERS_PER_PAGE;
+
   try {
-    await api.createComment({id, data: commentData});
+    await api.createComment({id, data: commentData, limit});
 
     res.redirect(`/offers/${id}`);
   } catch (errors) {
@@ -178,18 +180,20 @@ offersRouter.post(`/:id/comments`, auth, csrfProtection, async (req, res) => {
 
     res.render(`offers/ticket`, {offer, id, validationMessages, user, csrfToken: req.csrfToken()});
   }
-});
+}));
 
-offersRouter.get(`/:id/comments/delete/:commentId`, auth, async (req, res) => {
+offersRouter.delete(`/:id/comments/:commentId`, auth, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {id, commentId} = req.params;
 
+  const limit = OFFERS_PER_PAGE;
+
   try {
-    await api.removeComment({id, userId: user.id, commentId});
-    return res.redirect(`/my/comments`);
+    const comment = await api.removeComment({id, userId: user.id, commentId, limit});
+    res.status(HttpCode.OK).send(comment);
   } catch (errors) {
-    return res.redirect(`/my/comments`);
+    res.status(errors.response.status).send(errors.response.statusText);
   }
-});
+}));
 
 module.exports = offersRouter;

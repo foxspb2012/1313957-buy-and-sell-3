@@ -35,4 +35,6 @@ const HttpMethod = {
   DELETE: `DELETE`
 };
 
-module.exports = {DEFAULT_COMMAND, USER_ARGV_INDEX, ExitCode, HttpCode, MAX_ID_LENGTH, API_PREFIX, Env, HttpMethod};
+const OFFERS_PER_PAGE = 8;
+
+module.exports = {DEFAULT_COMMAND, USER_ARGV_INDEX, ExitCode, HttpCode, MAX_ID_LENGTH, API_PREFIX, Env, HttpMethod, OFFERS_PER_PAGE};

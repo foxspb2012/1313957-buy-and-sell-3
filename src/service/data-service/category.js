@@ -24,6 +24,9 @@ class CategoryService {
             `count`
           ]
         ],
+        order: [
+          [`name`, `ASC`],
+        ],
         group: [Sequelize.col(`Category.id`)],
         include: [{
           model: this._OfferCategory,

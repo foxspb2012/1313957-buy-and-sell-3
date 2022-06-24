@@ -21,4 +21,14 @@ const prepareErrors = (errors) => {
   return errors.response.data.split(`\n`);
 };
 
-module.exports = {getRandomInt, shuffle, ensureArray, prepareErrors};
+const asyncHandler = (cb) => {
+  return async function (req, res, next) {
+    try {
+      return await cb(req, res);
+    } catch (err) {
+      return next(err);
+    }
+  };
+};
+
+module.exports = {getRandomInt, shuffle, ensureArray, prepareErrors, asyncHandler};

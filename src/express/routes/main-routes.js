@@ -3,9 +3,8 @@
 const {Router} = require(`express`);
 const api = require(`../api`).getAPI();
 const upload = require(`../middlewares/upload`);
-const {prepareErrors} = require(`../../utils`);
-
-const OFFERS_PER_PAGE = 8;
+const {prepareErrors, asyncHandler} = require(`../../utils`);
+const {OFFERS_PER_PAGE} = require(`../../constants`);
 
 const mainRouter = new Router();
 
@@ -28,7 +27,7 @@ mainRouter.get(`/register`, (req, res) => {
   res.render(`sign-up`, {user});
 });
 
-mainRouter.post(`/register`, upload.single(`avatar`), async (req, res) => {
+mainRouter.post(`/register`, upload.single(`avatar`), asyncHandler(async (req, res) => {
   const {body, file} = req;
 
   const userData = {
@@ -49,7 +48,7 @@ mainRouter.post(`/register`, upload.single(`avatar`), async (req, res) => {
 
     res.render(`sign-up`, {user, userData, validationMessages});
   }
-});
+}));
 
 mainRouter.get(`/login`, (req, res) => {
   const {user} = req.session;
@@ -57,7 +56,7 @@ mainRouter.get(`/login`, (req, res) => {
   res.render(`login`, {user});
 });
 
-mainRouter.post(`/login`, async (req, res) => {
+mainRouter.post(`/login`, asyncHandler(async (req, res) => {
   const email = req.body[`user-email`];
   const password = req.body[`user-password`];
 
@@ -74,7 +73,7 @@ mainRouter.post(`/login`, async (req, res) => {
 
     res.render(`login`, {user, validationMessages});
   }
-});
+}));
 
 mainRouter.get(`/logout`, (req, res) => {
   req.session.destroy(
@@ -82,7 +81,7 @@ mainRouter.get(`/logout`, (req, res) => {
   );
 });
 
-mainRouter.get(`/search`, async (req, res) => {
+mainRouter.get(`/search`, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {query} = req.query;
 
@@ -92,7 +91,7 @@ mainRouter.get(`/search`, async (req, res) => {
 
   if (!query) {
     return res.render(`search-result`, {
-      query: '',
+      query: ``,
       result: [],
       offers,
       user
@@ -102,22 +101,20 @@ mainRouter.get(`/search`, async (req, res) => {
   try {
     const result = await api.search({query});
 
-    res.render(`search-result`, {
+    return res.render(`search-result`, {
       query,
       result,
       offers,
       user
     });
   } catch (error) {
-    const offers = await api.getOffers({limit});
-
-    res.render(`search-result`, {
+    return res.render(`search-result`, {
       query,
       result: [],
       offers,
       user
     });
   }
-});
+}));
 
 module.exports = mainRouter;

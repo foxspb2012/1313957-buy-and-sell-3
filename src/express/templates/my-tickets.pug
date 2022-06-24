@@ -25,5 +25,4 @@ block content
                   p.ticket-card__price
                     span.js-sum #{offer.sum}
                     |  ₽
-              form(method='GET' action=`/offers/delete/${offer.id}`)
-                button.ticket-card__del(type='submit') Удалить
+              a.ticket-card__del(href=`/offers/${offer.id}`) Удалить

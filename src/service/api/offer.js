@@ -4,13 +4,15 @@ const {Router} = require(`express`);
 const {HttpCode} = require(`../../constants`);
 const offerValidator = require(`../middlewares/offer-validator`);
 const routeParamsValidator = require(`../middlewares/route-params-validator`);
+const {adaptToClient} = require(`../lib/adapt-to-client`);
+const {asyncHandler} = require(`../../utils`);
 
 module.exports = (app, offerService) => {
   const route = new Router();
 
   app.use(`/offers`, route);
 
-  route.get(`/`, async (req, res) => {
+  route.get(`/`, asyncHandler(async (req, res) => {
     const {limit, offset, userId, categoryId, withComments} = req.query;
 
     let offers = {};
@@ -27,9 +29,9 @@ module.exports = (app, offerService) => {
       offers.commented = await offerService.findLimit({limit, withComments: true});
     }
     return res.status(HttpCode.OK).json(offers);
-  });
+  }));
 
-  route.get(`/:offerId`, routeParamsValidator, async (req, res) => {
+  route.get(`/:offerId`, routeParamsValidator, asyncHandler(async (req, res) => {
     const {offerId} = req.params;
     const {userId, withComments} = req.query;
 
@@ -42,16 +44,21 @@ module.exports = (app, offerService) => {
 
     return res.status(HttpCode.OK)
       .json(offer);
-  });
+  }));
 
-  route.post(`/`, offerValidator, async (req, res) => {
+  route.post(`/`, offerValidator, asyncHandler(async (req, res) => {
     const data = await offerService.create(req.body);
+
+    const adaptedOffer = adaptToClient(await offerService.findOne({offerId: data.id}));
+
+    const io = req.app.locals.socketio;
+    io.emit(`offer:create`, adaptedOffer);
 
     return res.status(HttpCode.CREATED)
       .json(data);
-  });
+  }));
 
-  route.put(`/:offerId`, [routeParamsValidator, offerValidator], async (req, res) => {
+  route.put(`/:offerId`, [routeParamsValidator, offerValidator], asyncHandler(async (req, res) => {
     const {offerId} = req.params;
     const updated = await offerService.update({id: offerId, offer: req.body});
 
@@ -62,9 +69,9 @@ module.exports = (app, offerService) => {
 
     return res.status(HttpCode.OK)
       .send(`Updated`);
-  });
+  }));
 
-  route.delete(`/:offerId`, routeParamsValidator, async (req, res) => {
+  route.delete(`/:offerId`, routeParamsValidator, asyncHandler(async (req, res) => {
     const {offerId} = req.params;
     const {userId} = req.body;
 
@@ -82,7 +89,11 @@ module.exports = (app, offerService) => {
         .send(`Forbidden`);
     }
 
+    const offers = await offerService.findLimit({limit: 8});
+    const io = req.app.locals.socketio;
+    io.emit(`offer:delete`, offers);
+
     return res.status(HttpCode.OK)
       .json(deletedOffer);
-  });
+  }));
 };

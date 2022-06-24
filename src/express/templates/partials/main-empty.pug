@@ -1,4 +1,7 @@
 .message
   .message__text
     p На сайте еще не опубликовано ни одного объявления.
-  a.message__link.btn.btn--big(href="/register") Вход и регистрация
+  if user === undefined
+    a.message__link.btn.btn--big(href="/register") Вход и регистрация
+
+
