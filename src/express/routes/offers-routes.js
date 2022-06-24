@@ -114,6 +114,7 @@ offersRouter.post(`/edit/:id`, auth, upload.single(`avatar`), csrfProtection, as
   const {user} = req.session;
   const {body, file} = req;
   const {id} = req.params;
+  const limit = OFFERS_PER_PAGE;
 
   const offerData = {
     picture: file ? file.filename : body[`old-image`],
@@ -126,7 +127,7 @@ offersRouter.post(`/edit/:id`, auth, upload.single(`avatar`), csrfProtection, as
   };
 
   try {
-    await api.editOffer({id, data: offerData});
+    await api.editOffer({id, data: offerData, limit});
 
     res.redirect(`/my`);
   } catch (errors) {
@@ -149,8 +150,10 @@ offersRouter.delete(`/:id`, auth, asyncHandler(async (req, res) => {
   const {user} = req.session;
   const {id} = req.params;
 
+  const limit = OFFERS_PER_PAGE;
+
   try {
-    const offer = await api.removeOffer({id, userId: user.id});
+    const offer = await api.removeOffer({id, userId: user.id, limit});
 
     res.status(HttpCode.OK).send(offer);
   } catch (errors) {

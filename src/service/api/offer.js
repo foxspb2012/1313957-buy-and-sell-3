@@ -61,11 +61,20 @@ module.exports = (app, offerService) => {
   route.put(`/:offerId`, [routeParamsValidator, offerValidator], asyncHandler(async (req, res) => {
     const {offerId} = req.params;
     const updated = await offerService.update({id: offerId, offer: req.body});
+    const {limit} = req.query;
 
     if (!updated) {
       return res.status(HttpCode.NOT_FOUND)
         .send(`Not found with ${offerId}`);
     }
+
+    const [offers, offersCommented] = await Promise.all([
+      offerService.findLimit({limit}),
+      offerService.findLimit({limit, withComments: true})
+    ]);
+
+    const io = req.app.locals.socketio;
+    io.emit(`offer:update`, offers, offersCommented);
 
     return res.status(HttpCode.OK)
       .send(`Updated`);
@@ -74,6 +83,7 @@ module.exports = (app, offerService) => {
   route.delete(`/:offerId`, routeParamsValidator, asyncHandler(async (req, res) => {
     const {offerId} = req.params;
     const {userId} = req.body;
+    const {limit} = req.query;
 
     const offer = await offerService.findOne({offerId});
 
@@ -89,9 +99,13 @@ module.exports = (app, offerService) => {
         .send(`Forbidden`);
     }
 
-    const offers = await offerService.findLimit({limit: 8});
+    const [offers, offersCommented] = await Promise.all([
+      offerService.findLimit({limit}),
+      offerService.findLimit({limit, withComments: true})
+    ]);
+
     const io = req.app.locals.socketio;
-    io.emit(`offer:delete`, offers);
+    io.emit(`offer:delete`, offers, offersCommented);
 
     return res.status(HttpCode.OK)
       .json(deletedOffer);

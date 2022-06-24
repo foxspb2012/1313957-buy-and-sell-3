@@ -77,8 +77,14 @@
     updateOffersElements(offer);
   })
 
-  socket.addEventListener('offer:delete', (offers) => {
+  socket.addEventListener('offer:update', (offers, offersCommented) => {
     updateOffersAfter(offers);
+    updateOffersCommented(offersCommented);
+  })
+
+  socket.addEventListener('offer:delete', (offers, offersCommented) => {
+    updateOffersAfter(offers);
+    updateOffersCommented(offersCommented);
   })
 
   socket.addEventListener('comment:create', (offersCommented) => {

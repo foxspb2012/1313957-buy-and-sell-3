@@ -33,23 +33,25 @@ class API {
   createOffer({data}) {
     return this._load(`/offers`, {
       method: HttpMethod.POST,
-      data
+      data,
     });
   }
 
-  editOffer({id, data}) {
+  editOffer({id, data, limit}) {
     return this._load(`/offers/${id}`, {
       method: HttpMethod.PUT,
-      data
+      data,
+      params: {limit}
     });
   }
 
-  removeOffer({id, userId}) {
+  removeOffer({id, userId, limit}) {
     return this._load(`/offers/${id}`, {
       method: HttpMethod.DELETE,
       data: {
         userId
-      }
+      },
+      params: {limit}
     });
   }
 
